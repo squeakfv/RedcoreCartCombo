@@ -24,11 +24,21 @@ jobs:
         with:
           gradle-version: '9.2.1'
 
-      - name: Build mod JAR
-        run: gradle --no-daemon clean build
+      - name: Build remapped Fabric JAR
+        run: gradle --no-daemon clean remapJar
+
+      - name: Verify JAR
+        run: |
+          echo "Generated JAR files:"
+          find build/libs -name "*.jar" -type f
+          JAR=$(find build/libs -maxdepth 1 -name "*.jar" ! -name "*sources*" ! -name "*dev*" | head -n 1)
+          test -n "$JAR"
+          jar tf "$JAR" | grep -q "fabric.mod.json"
+          jar tf "$JAR" | grep -q "\.class"
+          echo "Valid Fabric JAR: $JAR"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: redcore-cart-combo-fabric-1.21.11
+          name: REDCORE-FABRIC-1.21.11
           path: build/libs/*.jar
           if-no-files-found: error
